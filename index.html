@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>You are special!</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" href="data:,">
+<style>
+  :root{
+    --bg:#000000;
+    --pink:#ff2d78;
+    --pink2:#ff5fa2;
+    --purple:#3a0a2a;
+    --card:#241019;
+    --text:#f5e9ee;
+    --muted:#b79aa4;
+  }
+  *{box-sizing:border-box;}
+  html,body{
+    margin:0;padding:0;
+    background:var(--bg);
+    color:var(--text);
+    font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Helvetica Neue',Arial,sans-serif;
+    height:100%;
+    overflow-x:hidden;
+  }
+  body{
+    min-height:100vh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    background:radial-gradient(ellipse at 50% 20%, #2a0a1a 0%, #000000 60%);
+  }
+  .phone{
+    width:100%;
+    max-width:420px;
+    min-height:100vh;
+    position:relative;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    padding:40px 24px;
+    text-align:center;
+  }
+  .script{
+    font-family:'Snell Roundhand','Segoe Script','Brush Script MT',cursive;
+    font-weight:700;
+  }
+  /* ---------- shared bits ---------- */
+  .glow-circle{
+    width:150px;height:150px;
+    border-radius:50%;
+    background:radial-gradient(circle, rgba(255,45,120,0.35) 0%, rgba(255,45,120,0.05) 70%, transparent 100%);
+    display:flex;align-items:center;justify-content:center;
+    margin-bottom:28px;
+  }
+  .mascot{
+    width:96px;height:96px;
+    filter:drop-shadow(0 0 18px rgba(255,95,162,0.5));
+  }
+  .screen{
+    display:none;
+    flex-direction:column;
+    align-items:center;
+    width:100%;
+    opacity:1;
+  }
+  .screen.active{display:flex;}
+  .screen.active.transitioning{
+    animation:fadeIn .6s ease both;
+  }
+  @keyframes fadeIn{
+    from{opacity:0; transform:translateY(14px);}
+    to{opacity:1; transform:translateY(0);}
+  }
+  .btn{
+    border:none;
+    cursor:pointer;
+    padding:16px 36px;
+    border-radius:40px;
+    font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Helvetica Neue',Arial,sans-serif;
+    font-size:16px;
+    font-weight:600;
+    color:#fff;
+    background:linear-gradient(135deg, var(--pink) 0%, #ff0f5b 100%);
+    box-shadow:0 8px 24px rgba(255,45,120,0.45);
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    transition:transform .15s ease, box-shadow .15s ease;
+  }
+  .btn:hover{transform:translateY(-2px); box-shadow:0 10px 30px rgba(255,45,120,0.6);}
+  .btn:active{transform:translateY(0px) scale(.98);}
+
+  /* ---------- screen 1: landing ---------- */
+  #screen-landing h1{
+    font-size:44px;
+    color:var(--pink2);
+    margin:0 0 10px 0;
+  }
+  #screen-landing p{
+    color:var(--muted);
+    margin:0 0 34px 0;
+    font-size:15px;
+  }
+
+  /* ---------- screen 2: loading ---------- */
+  #screen-loading .loading-card{
+    width:100%;
+    background:linear-gradient(180deg, rgba(255,45,120,0.08), rgba(0,0,0,0));
+    border:1px solid rgba(255,95,162,0.2);
+    border-radius:24px;
+    padding:36px 26px;
+  }
+  #screen-loading h2{
+    font-size:20px;
+    font-weight:600;
+    margin:0 0 20px 0;
+    color:#fff;
+  }
+  .percent{
+    font-size:40px;
+    font-weight:700;
+    color:var(--pink2);
+    margin:0 0 18px 0;
+  }
+  .bar-track{
+    width:100%;
+    height:14px;
+    border-radius:20px;
+    background:rgba(255,255,255,0.08);
+    overflow:hidden;
+    margin-bottom:18px;
+  }
+  .bar-fill{
+    height:100%;
+    width:0%;
+    border-radius:20px;
+    background:linear-gradient(90deg, #ff0f5b, #ff5fa2);
+    transition:width 2.6s cubic-bezier(.2,.8,.2,1), background .4s ease;
+  }
+  .bar-fill.overload{
+    background:linear-gradient(90deg, #ff3b1f, #ff0f5b);
+    animation:pulseBar .5s ease-in-out infinite;
+  }
+  @keyframes pulseBar{
+    0%,100%{box-shadow:0 0 0px rgba(255,45,45,0.6);}
+    50%{box-shadow:0 0 22px rgba(255,45,45,0.9);}
+  }
+  .percent.overload{
+    color:#ff4d3d;
+    animation:pulseBar .5s ease-in-out infinite;
+  }
+  .calc-text{
+    color:var(--pink2);
+    font-size:14px;
+    font-weight:500;
+    opacity:.9;
+    transition:color .3s ease;
+  }
+  .calc-text.warning{
+    color:#ff4d3d;
+    font-weight:600;
+  }
+
+  /* ---------- screen 3: reveal cards ---------- */
+  #screen-reveal h1{
+    font-size:38px;
+    color:#fff;
+    margin:0 0 6px 0;
+  }
+  #screen-reveal .sub{
+    color:var(--muted);
+    font-size:14px;
+    margin:0 0 26px 0;
+  }
+  .cards{
+    width:100%;
+    display:flex;
+    flex-direction:column;
+    gap:12px;
+    margin-bottom:28px;
+  }
+  .card{
+    width:100%;
+    min-height:56px;
+    border-radius:16px;
+    background:rgba(255,255,255,0.05);
+    border:1px solid rgba(255,95,162,0.25);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    cursor:pointer;
+    font-size:15px;
+    color:var(--muted);
+    padding:14px 20px;
+    transition:background .3s ease, color .3s ease, transform .15s ease;
+    user-select:none;
+  }
+  .card:active{transform:scale(.98);}
+  .card .heart-icon{font-size:18px; opacity:.6; transition:opacity .3s ease;}
+  .card.revealed{
+    background:rgba(255,45,120,0.12);
+    color:#fff;
+    font-weight:500;
+  }
+  .card.revealed .heart-icon{opacity:0; width:0;}
+
+  /* ---------- screen 4: note ---------- */
+  #screen-note h1{
+    font-size:32px;
+    color:#fff;
+    margin:0 0 24px 0;
+  }
+  .note-card{
+    width:100%;
+    background:linear-gradient(160deg, #ffd6e6, #ffc3dd);
+    color:#4a2036;
+    border-radius:22px;
+    padding:30px 26px 34px 26px;
+    text-align:left;
+    box-shadow:0 20px 50px rgba(255,45,120,0.25);
+  }
+  .note-card .heart-top{
+    text-align:center;
+    font-size:26px;
+    margin-bottom:16px;
+  }
+  .note-text{
+    font-size:15px;
+    line-height:1.7;
+    min-height:170px;
+  }
+  .note-text .cursor{
+    display:inline-block;
+    width:2px;
+    background:#4a2036;
+    margin-left:2px;
+    animation:blink 1s step-end infinite;
+  }
+  @keyframes blink{50%{opacity:0;}}
+  #note-btn-wrap{margin-top:22px; text-align:center; display:none;}
+
+  /* ---------- screen 5: final ---------- */
+  #screen-final h1{
+    font-size:30px;
+    color:#fff;
+    margin-top:20px;
+  }
+
+  .progress-dots{
+    position:absolute;
+    top:22px;
+    display:flex;
+    gap:6px;
+  }
+  .progress-dots span{
+    width:6px;height:6px;border-radius:50%;
+    background:rgba(255,255,255,0.15);
+    transition:background .3s ease;
+  }
+  .progress-dots span.on{background:var(--pink2);}
+</style>
+</head>
+<body>
+<div class="phone">
+
+  <div class="progress-dots" id="dots"></div>
+
+  <!-- SCREEN 1: LANDING -->
+  <section class="screen active" id="screen-landing">
+    <div class="glow-circle">
+      <svg class="mascot" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <ellipse cx="50" cy="55" rx="34" ry="32" fill="#FFFDF9"/>
+        <ellipse cx="30" cy="30" rx="9" ry="11" fill="#FFFDF9"/>
+        <ellipse cx="70" cy="30" rx="9" ry="11" fill="#FFFDF9"/>
+        <ellipse cx="22" cy="60" rx="7" ry="10" fill="#FFE3E8"/>
+        <ellipse cx="78" cy="60" rx="7" ry="10" fill="#FFE3E8"/>
+        <circle cx="38" cy="55" r="3" fill="#4a2036"/>
+        <circle cx="62" cy="55" r="3" fill="#4a2036"/>
+        <ellipse cx="50" cy="64" rx="6" ry="4" fill="#FFB199"/>
+        <ellipse cx="30" cy="50" rx="5" ry="3" fill="#FFC9D2" opacity="0.8"/>
+        <ellipse cx="70" cy="50" rx="5" ry="3" fill="#FFC9D2" opacity="0.8"/>
+      </svg>
+    </div>
+    <h1 class="script">Hey Beautiful</h1>
+    <p>Do you even know how cute you are?</p>
+    <button class="btn" onclick="goTo('loading')">Open My Heart ♥</button>
+  </section>
+
+  <!-- SCREEN 2: LOADING -->
+  <section class="screen" id="screen-loading">
+    <div class="loading-card">
+      <h2>Measuring your cuteness...</h2>
+      <div class="percent" id="percentLabel">0%</div>
+      <div class="bar-track"><div class="bar-fill" id="barFill"></div></div>
+      <div class="calc-text" id="calcText">Calculating cuteness...</div>
+    </div>
+  </section>
+
+  <!-- SCREEN 3: REVEAL CARDS -->
+  <section class="screen" id="screen-reveal">
+    <div class="glow-circle" style="width:100px;height:100px;margin-bottom:18px;">
+      <span style="font-size:40px;">💗</span>
+    </div>
+    <h1 class="script">Just for you</h1>
+    <p class="sub">Tap each one to reveal</p>
+    <div class="cards" id="cardsWrap">
+      <div class="card" data-text="You look adorable">
+        <span class="label"></span><span class="heart-icon">♡</span>
+      </div>
+      <div class="card" data-text="You have the sweetest vibe">
+        <span class="label"></span><span class="heart-icon">♡</span>
+      </div>
+      <div class="card" data-text="You make things feel lighter">
+        <span class="label"></span><span class="heart-icon">♡</span>
+      </div>
+      <div class="card" data-text="You are naturally charming">
+        <span class="label"></span><span class="heart-icon">♡</span>
+      </div>
+      <div class="card" data-text="You make everything feel more special">
+        <span class="label"></span><span class="heart-icon">♡</span>
+      </div>
+    </div>
+    <button class="btn" id="seeMoreBtn" onclick="goTo('note')">See more →</button>
+  </section>
+
+  <!-- SCREEN 4: NOTE -->
+  <section class="screen" id="screen-note">
+    <h1 class="script">A little note for you</h1>
+    <div class="note-card">
+      <div class="heart-top">💗</div>
+      <div class="note-text" id="noteText"></div>
+    </div>
+    <div id="note-btn-wrap">
+      <button class="btn" onclick="goTo('final')">One more thing →</button>
+    </div>
+  </section>
+
+  <!-- SCREEN 5: FINAL -->
+  <section class="screen" id="screen-final">
+    <div class="glow-circle">
+      <svg class="mascot" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <ellipse cx="50" cy="55" rx="30" ry="30" fill="#FFFDF9"/>
+        <ellipse cx="50" cy="30" rx="24" ry="20" fill="#FFFDF9"/>
+        <ellipse cx="34" cy="66" rx="7" ry="9" fill="#E8C9A0"/>
+        <circle cx="72" cy="46" r="3" fill="#FFC9D2"/>
+        <path d="M84 60 l3 3 l-3 3 l-3 -3 z" fill="#FFC9D2"/>
+      </svg>
+    </div>
+    <h1 class="script">You'll always be special to me</h1>
+  </section>
+
+</div>
+
+<script>
+const order = ['landing','loading','reveal','note','final'];
+function updateDots(active){
+  const wrap = document.getElementById('dots');
+  wrap.innerHTML = '';
+  order.forEach(name=>{
+    const d = document.createElement('span');
+    if(name===active) d.classList.add('on');
+    wrap.appendChild(d);
+  });
+}
+
+function goTo(name){
+  order.forEach(n=>document.getElementById('screen-'+n).classList.remove('active','transitioning'));
+  const next = document.getElementById('screen-'+name);
+  next.classList.add('active','transitioning');
+  updateDots(name);
+  if(name==='loading') startLoading();
+  if(name==='note') startNote();
+}
+
+// ---- loading bar ----
+function startLoading(){
+  const fill = document.getElementById('barFill');
+  const label = document.getElementById('percentLabel');
+  const calcText = document.getElementById('calcText');
+  const threshold = 120;
+  const target = 132;
+
+  fill.style.width = '0%';
+  fill.classList.remove('overload');
+  label.classList.remove('overload');
+  label.textContent = '0%';
+  calcText.classList.remove('warning');
+  calcText.textContent = 'Calculating cuteness...';
+
+  requestAnimationFrame(()=>{
+    fill.style.width = '100%'; // bar visually caps at full width
+  });
+
+  let warned = false;
+  const duration = 3200;
+  const start = performance.now();
+  function step(t){
+    const progress = Math.min((t-start)/duration, 1);
+    const current = Math.floor(progress*target);
+    label.textContent = current + '%';
+
+    if(current >= threshold && !warned){
+      warned = true;
+      fill.classList.add('overload');
+      label.classList.add('overload');
+      calcText.classList.add('warning');
+      calcText.textContent = '⚠️ Warning: Cuteness levels exceeding safe limits!';
+    }
+
+    if(progress < 1){
+      requestAnimationFrame(step);
+    } else {
+      label.textContent = target + '%';
+      setTimeout(()=>goTo('reveal'), 1400);
+    }
+  }
+  requestAnimationFrame(step);
+}
+
+// ---- reveal cards ----
+document.querySelectorAll('.card').forEach(card=>{
+  card.addEventListener('click', ()=>{
+    if(card.classList.contains('revealed')) return;
+    card.classList.add('revealed');
+    card.querySelector('.label').textContent = card.dataset.text;
+  });
+});
+
+// ---- typewriter note ----
+const noteFull = "I just wanted to tell you something... you really are special in a way that's hard to explain.\n\nThere's a softness in the way you talk, a sweetness in the way you smile, and something genuine about you that just feels good to be around.\n\nYou don't try to be anything extra, you're just you, and that's what makes you so lovely.";
+let noteStarted = false;
+function startNote(){
+  if(noteStarted) return;
+  noteStarted = true;
+  const el = document.getElementById('noteText');
+  const btnWrap = document.getElementById('note-btn-wrap');
+  el.innerHTML = '';
+  let i = 0;
+  const speed = 18;
+  function typeChar(){
+    if(i <= noteFull.length){
+      const shown = noteFull.slice(0,i).replace(/\n/g,'<br><br>');
+      el.innerHTML = shown + '<span class="cursor">&nbsp;</span>';
+      i++;
+      setTimeout(typeChar, speed);
+    } else {
+      el.innerHTML = noteFull.replace(/\n/g,'<br><br>');
+      btnWrap.style.display = 'block';
+    }
+  }
+  typeChar();
+}
+
+updateDots('landing');
+</script>
+</body>
+</html>
